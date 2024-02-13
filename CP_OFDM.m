@@ -11,9 +11,12 @@ s = [1+1i, 1-1i, -1+1i,-1-1i]/sqrt(2);
 symbol_cp = zeros(M+L-1,1);% create symbol array
 
 for i = 5 : M+L-1
-    randomIndex = randi(length(s ), 1);
-     symbol_cp(i) = s(randomIndex);%random choose from QPSK
+    randomIndex = randi(length(s), 1);
+    symbol_cp(i) = s(randomIndex);%random choose from QPSK
 end
+
+
+symbol_cp = ifft(symbol_cp);
 
 %add cp
 cp = L-1;
@@ -21,6 +24,8 @@ for j = 1:cp
     symbol_cp(j) = symbol_cp(M+j);
 end
 
+
+%Since we decide to remove cp right here, I will create an 
 
 
 
