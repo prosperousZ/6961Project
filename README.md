@@ -5,4 +5,4 @@ Since there are 4 symbols, one symbol(real data) is 16 bits, and cp is 4 bits, w
 
 For the channel model, we have h = 4x16 matrix, our method uses the function that does not consider the CP at all, which means we remove the CP during the channel <br>
 
-
+Currently, we done part 1 of the project, the CP-OFDM and ZP-OFDM.
