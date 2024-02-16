@@ -8,8 +8,8 @@ M=16;   %# of subcarriers
 N=4;    %Number of OFDM-QPSK SYMBOLS symbols
 L=5;    %taps
 %Delcare channel h
-%h=[0.227, 0.46, 0.688, 0.46, 0.227];
-h=[1 0 0 0 0];
+h=[0.227, 0.46, 0.688, 0.46, 0.227];
+%h=[1 0 0 0 0];
 %QPSK Symbol Map
 QPSKmap= [1+1j, -1+1j, -1-1j, 1-1j];
 s = zeros(M,1);
