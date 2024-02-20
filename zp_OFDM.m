@@ -40,26 +40,26 @@ for k=1:N
   %Y Output after going through channel impulse response of data w/o cp
 
   for i=L:M+2*(L-1)
-      y(i-(L-1))=h(1)*s_cp(i)+h(2)*s_cp(i-1)+h(3)*s_cp(i-2)+h(4)*s_cp(i-3)+h(5)*s_cp(i-4);
+      y(i)=h(1)*s_cp(i)+h(2)*s_cp(i-1)+h(3)*s_cp(i-2)+h(4)*s_cp(i-3)+h(5)*s_cp(i-4);
   end
-  
+  yy = y(5:24);
  
   %step 5 from lecture 11 instructor' note which is similar to fft(y), but
   %not the same
   for ii = 1:M
       sum = 0;
       for kk = 1: M+(L-1)
-          sum = sum + y(kk) .* exp(-(1j*2*pi*(kk-1)*(ii-1))/M);
+          sum = sum + yy(kk) .* exp(-(1j*2*pi*(kk-1)*(ii-1))/M);
       end
       y_freq(ii) = sum;
   end
-  
+  %y_freq = fft(yy);
   %step 6
   h_freq = fft(h, M).';
   d_freq=y_freq./h_freq;
   for w = 1 : M
     
-     d_result(w,k) = y_freq(w);
+     d_result(w,k) = d_freq(w);
   end
 
 end
