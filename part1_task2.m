@@ -28,7 +28,7 @@ d_original = zeros(M*N,1);
 d_result =  zeros(M*N, 1);
 
 %Passband symbols
-xPB_syms= zeros(M*N,1);
+xPB_syms= [];
 
 %Creates Chirp
    t1=0.05;
