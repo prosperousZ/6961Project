@@ -22,17 +22,15 @@ beta=0.125;
 delay=100;
 
 %Store 4 symbols here
-d_original = zeros(M*N,1);   
+d_original = zeros(M*N,1);
 
 %result symbol
 d_result =  zeros(M*N, 1);
 
 %Passband symbols
-xPB_syms= zeros(M*N, 1); 
+xPB_syms= zeros(M*N, 1);
 
-%%%%%%%%%%%%%%%%%
-% Create Chirp %
-%%%%%%%%%%%%%%%%%
+%Creates Chirp
    t1=0.05;
    t2=0.2;
    f_0=fc-4000;
@@ -46,12 +44,10 @@ xPB_syms= zeros(M*N, 1);
 
 %**************iteration start*********************
 for k=0:N-1
-  %%%%%%%%%%%%%%%%%%%%%%%%%%
-  % Generate 1 OFDM SYMBOL %
-  %%%%%%%%%%%%%%%%%%%%%%%%%%
+%Generate 1 OFDM SYMBOL
   for j = 1 : M
      randomIndex = randi(length(QPSKmap), 1);
-     s(j) = QPSKmap(randomIndex);%random choose from QPSK
+     s(j) = QPSKmap(randomIndex)/sqrt(2);%random choose from QPSK
      d_original(j+k*M) = s(j);
   end
   
@@ -59,26 +55,19 @@ for k=0:N-1
   x=ifft(s);
   
   %Add zp
-  tem = zeros(L-1,1);
+  tem = zeros(L,1);
   s_cp=[tem; x;tem];
 
-  %%%%%%%%%%%%
-  % upsample %
-  %%%%%%%%%%%%
+  %upsample
   lambda=Fs/Fd;
   xup=upsample(s_cp, lambda);
   t=[0:length(xup)-1]/Fs;
   figure(), plot(t, abs(xup))
 
-  %%%%%%%%%%
-  % Filter % %Square Root cosine Pulse
-  %%%%%%%%%%
+  %Square Root cosine Pulse
    sr_cos=rcosdesign(beta, 2*delay, lambda, 'sqrt');
-   xBB=conv(xup, sr_cos);
-
-   %%%%%%%%%%
-   % Plots %
-   %%%%%%%%%
+   xBB1=conv(xup, sr_cos);
+   
    %RCos Plot
    t=[0:length(sr_cos)-1]/Fs;         %Time Domain Plot
    figure(), plot(t, abs(sr_cos))
@@ -87,56 +76,50 @@ for k=0:N-1
    f=[-length(SR_cos)/2:(length(SR_cos))/2-1]*Fs;
    figure(), plot(f, abs(SR_cos))
 
-   %xBB Data Plot
-   t=[0:length(xBB)-1]/Fs;                       %Time Domain Plot
-   figure(), plot(t, abs(xBB))
+   %Data Plot
+   t=[0:length(xBB1)-1]/Fs;                       %Time Domain Plot
+   figure(), plot(t, abs(xBB1))
     
-   XBB=fftshift(fft(xBB));                        %Freq Domain Plot
-   f=[-length(xBB)/2:(length(xBB))/2-1]/length(xBB)*Fs;
-   figure(), plot(f, abs(XBB))
-
-   %%%%%%%%%%%%%%%%%%%%%%%
-   % Convert to Passband %
-   %%%%%%%%%%%%%%%%%%%%%%%
+   XBB1=fftshift(fft(xBB1));                     %Freq Domain Plot
+   f=[-length(xBB1)/2:(length(xBB1))/2-1]/length(xBB1)*Fs;
+   figure(), plot(f, abs(XBB1))
+  
+   %Passband
    Ts=1/B;
    ts=Ts/lambda;
-   n=[0:length(xBB)-1].';
-   xPB=real(exp(1j*2*pi*fc*n*ts).*xBB);
-
-   %%%%saving passband data for spectrogram plot%%%%
+   n=[0:length(xBB1)-1].';
+   xPB=real(exp(1j*2*pi*fc*n*ts).*xBB1);
    len_pb=length(xPB);
-   xPB_syms(1+k*len_pb:k*len_pb+len_pb)=xPB(1:len_pb);  
-
-   %%%%%%%%%%%%%%
-   % Validation %
-   %%%%%%%%%%%%%%
+   xPB_syms(1+k*len_pb:k*len_pb+len_pb)=xPB(1:len_pb);
+    
    %Convert Signal back to baseband
+   n=[0:length(xPB)-1].';
    xBB_i=xPB.*sin(2*pi*fc*n*ts)*2;
    xBB_r=xPB.*cos(2*pi*fc*n*ts)*2;
-   xBB=xBB_r+1i*xBB_i;
+   xBB2=xBB_r-1i*xBB_i;
 
-   %%%%%%%%%%%%%%%%
-   % Match Filter %
-   %%%%%%%%%%%%%%%%
-   xOUF=conv(xBB, sr_cos);
+   XBB2=fftshift(fft(xBB2));                     %Freq Domain Plot
+   f=[-length(xBB2)/2:(length(xBB2))/2-1]/length(xBB2)*Fs;
+   figure(), plot(f, abs(XBB2))
 
-   %%%%%%%%%%%%%%%
-   % Down Sample %
-   %%%%%%%%%%%%%%%
-   xBBd=xOUF(delay*lambda+1:lambda:end-delay*lambda);
+   %Match Filter
+   xOUF=conv(xBB2, sr_cos);
 
-   %%%%%%%%%%%
-   %   FFT   %  %fft to convert symbols back into frequency domain
-   %%%%%%%%%%%
+   XOUF=fftshift(fft(xOUF));                     %Freq Domain Plot
+   f=[-length(xOUF)/2:(length(xOUF))/2-1]/length(xOUF)*Fs;
+   figure(), plot(f, abs(XOUF))
+   %Down Sample
+   xBBd=xOUF(((2*delay+L)*lambda)+1:lambda:end-delay*lambda);
+
+   %fft to convert symbols back into frequency domain
     for ii = 1:M
          sum = 0;
-         for kk = 1: M+(L-1)
-             sum = sum + xBBd(kk) .* exp(-(1j*2*pi*(kk-1)*(ii-1))/M);
+         for kk = 1: M+L
+             sum = sum + xBBd(kk) .* exp(-1j*2*pi*(kk-1)*(ii-1)/M);
          end
          y_freq(ii) = sum;
     end
    
-
    d_result(1+k*M:k*M+M) = y_freq(1:M);
 end
     
