@@ -7,4 +7,6 @@ For the channel model, we have h = 4x16 matrix, our method uses the function tha
 
 Currently, we have done part 1 of the project, the CP-OFDM and ZP-OFDM. Just need to compare d_original vs d_result, you can see they are the same. Which means The CP and ZP are working correctly.<br>
 
-Currently, we have done the project 1 both task 1 and task 2.
+Currently, we have done the project 1 both task 1 and task 2.<br>
+
+We are stucking at the point that find the right Trx of project 2
