@@ -20,9 +20,9 @@ a = v/c;
 
 %maxX = max(Ypb, [], "all");
 
-%plot(Ypb);
+plot(Ypb);
 Ttx = 8.2695;
-Trx =
+Trx = (2117580 - 700) * (1/samplingRate);% sample
 a_hat = Ttx/Trx -1;
 YPB_re = resample(Ypb, round((1+a_hat) * 1e5),1e5);
 Ls = 192;
