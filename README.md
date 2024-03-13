@@ -9,4 +9,6 @@ Currently, we have done part 1 of the project, the CP-OFDM and ZP-OFDM. Just nee
 
 Currently, we have done the project 1 both task 1 and task 2.<br>
 
-We are stucking at the point that find the right Trx of project 2
+We find the correct way to Trx, and calculate a_hat<br>
+
+
