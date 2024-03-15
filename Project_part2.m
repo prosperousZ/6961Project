@@ -38,7 +38,7 @@ correlation = xcorr(YPB_re_hat,pilot);
 figure(2)
 plot(abs(correlation));
 %starting point of OFDM symbol
-n0 = 1418960;
+n0 = 292726;
 %n0_withGap = n0 + 2400;
 YPB_re_hat = YPB_re_hat(n0:end);
 vector= load('itc_1007_compfilter.mat');
