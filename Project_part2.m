@@ -37,14 +37,16 @@ pilot = struct2array(pilot);
 correlation = xcorr(YPB_re_hat,pilot);
 figure(2)
 plot(abs(correlation));
+
 %starting point of OFDM symbol
 n0 = 292726;
 %n0_withGap = n0 + 2400;
 YPB_re_hat = YPB_re_hat(n0:end);
+
 vector= load('itc_1007_compfilter.mat');
 vector = struct2array(vector);
-%figure (3)
-%plot(vector)
+figure (3)
+plot(vector)
 %convolve signal with the "vector"
 YPB_re_hat_vector = conv(YPB_re_hat, vector);
 delay = 50;
@@ -57,8 +59,8 @@ YBB_I = real(YPB_re_hat_vector .* 2.*cos(2.*pi.*Fc.*ts .*n_passbandToBaseBand ))
 YBB_Q = -imag(YPB_re_hat_vector .* 2.*sin(2.*pi.*Fc.*ts .*n_passbandToBaseBand ));
 
 YBB = YBB_I + 1j.*YBB_Q;
-%figure(4)
-%plot(YBB)
+figure(4)
+plot(YBB)
 
 %***********************step 8, match filtering******************
 beta = 0.125;
@@ -66,11 +68,32 @@ delay_R = 100;
 %removed delay
 R=rcosdesign(beta, 2*delay_R, Lambda, 'sqrt');
 YBB_est = conv(YBB,R);
-n = [0:(k+L)*Lambda -1];
+%This step is to remove delay after conv
+YBB_est = YBB_est(2401:end);
+%figure(5)
+%plot(YBB_est);
+
+%declare n, i, and z_m_1
+n = [1:(k+L)*Lambda].';
+i = [1:k+L].';
+z_m_1 = zeros(k);
+
+%power over null subcarriers
+p = zeros((2400-2200)/1,(2-(-2))/0.1);
 for n_hat_0_1 = [2200:1:2400]
-    for epsilon_1 = [-2:0,1:2]
-        YBB_hat_1 = YBB_est(n_hat_0_1 + n) .* exp((-1j .* 2.*pi.*epsilon_1).*(n) .*ts);
+    for epsilon_1 = [-2:0.1:2]
+        %CFO compensation:
+        YBB_hat_1 = YBB_est(n_hat_0_1 + n-1) .* exp((-1j .* 2.*pi.*epsilon_1).*(n-1+n_hat_0_1) .*ts);
+        %Down-sampling
+        YBB_hat_1 = YBB_hat_1(i*Lambda);
+        for m = 1:k
+            for q = 1:length(i)
+                z_m_1(m) = z_m_1(m) + YBB_hat_1(q) * exp(-1j*((2*pi*(m-1)*(q-1))/k));
+            end
+        end
+       %p(n_hat_0_1-2200,(epsilon_1-(-2))/0.1) = ? 
     end
 end
+
 
 
