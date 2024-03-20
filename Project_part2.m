@@ -76,7 +76,7 @@ YBB_est = YBB_est(2401:end);
 %declare n, i, and z_m_1
 n = [1:(k+L)*Lambda].';
 i = [1:k+L].';
-z_m_1 = zeros(k);
+z_m_1 = zeros(k,1);
 
 %power over null subcarriers
 p = zeros((2400-2200)/1,(2-(-2))/0.1);
@@ -87,11 +87,15 @@ for n_hat_0_1 = [2200:1:2400]
         %Down-sampling
         YBB_hat_1 = YBB_hat_1(i*Lambda);
         for m = 1:k
-            for q = 1:length(i)
-                z_m_1(m) = z_m_1(m) + YBB_hat_1(q) * exp(-1j*((2*pi*(m-1)*(q-1))/k));
-            end
+            z_m_1(m) = sum(YBB_hat_1(i) .*exp(-1j * (2.*pi.*(m-1) .* (i-1))./k));
+            %for q = 1:length(i)
+             %   z_m_1(m) = z_m_1(m) + YBB_hat_1(q) * exp(-1j*((2*pi*(m-1)*(q-1))/k));
+            %end
         end
-       %p(n_hat_0_1-2200,(epsilon_1-(-2))/0.1) = ? 
+        %for w = 1:k
+         %   p(n_hat_0_1-2200+1,(epsilon_1-(-2))/0.1+1) =  sum()
+        %end
+        %p(n_hat_0_1-2200+1,(epsilon_1-(-2))/0.1+1) = sum(z_m_1(i))
     end
 end
 
