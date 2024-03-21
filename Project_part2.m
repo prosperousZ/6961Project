@@ -35,8 +35,8 @@ YPB_re_hat = upfirdn(YPB_re,h,Ls,Ms);
 pilot= load('pilot_signal_for_synchronization.mat');
 pilot = struct2array(pilot);
 correlation = xcorr(YPB_re_hat,pilot);
-figure(2)
-plot(abs(correlation));
+%figure(2)
+%plot(abs(correlation));
 
 %starting point of OFDM symbol
 n0 = 292726;
@@ -45,8 +45,8 @@ YPB_re_hat = YPB_re_hat(n0:end);
 
 vector= load('itc_1007_compfilter.mat');
 vector = struct2array(vector);
-figure (3)
-plot(vector)
+%figure (3)
+%plot(vector)
 %convolve signal with the "vector"
 YPB_re_hat_vector = conv(YPB_re_hat, vector);
 delay = 50;
@@ -59,8 +59,8 @@ YBB_I = real(YPB_re_hat_vector .* 2.*cos(2.*pi.*Fc.*ts .*n_passbandToBaseBand ))
 YBB_Q = -imag(YPB_re_hat_vector .* 2.*sin(2.*pi.*Fc.*ts .*n_passbandToBaseBand ));
 
 YBB = YBB_I + 1j.*YBB_Q;
-figure(4)
-plot(YBB)
+%figure(4)
+%plot(YBB)
 
 %***********************step 8, match filtering******************
 beta = 0.125;
@@ -85,7 +85,8 @@ for n_hat_0_1 = [2200:1:2400]
         %CFO compensation:
         YBB_hat_1 = YBB_est(n_hat_0_1 + n-1) .* exp((-1j .* 2.*pi.*epsilon_1).*(n-1+n_hat_0_1) .*ts);
         %Down-sampling
-        YBB_hat_1 = YBB_hat_1(i*Lambda);
+        %YBB_hat_1 = YBB_hat_1(i*Lambda);
+        YBB_hat_1 = YBB_hat_1(1:Lambda:(k+L)*Lambda);
         for m = 1:k
             z_m_1(m) = sum(YBB_hat_1(i) .*exp(-1j * (2.*pi.*(m-1) .* (i-1))./k));
             %for q = 1:length(i)
@@ -95,9 +96,14 @@ for n_hat_0_1 = [2200:1:2400]
         %for w = 1:k
          %   p(n_hat_0_1-2200+1,(epsilon_1-(-2))/0.1+1) =  sum()
         %end
-        %p(n_hat_0_1-2200+1,(epsilon_1-(-2))/0.1+1) = sum(z_m_1(i))
+
+       % p(n_hat_0_1-2200+1,(epsilon_1-(-2))/0.1+1) = sum(abs(z_m_1)).^2;
+       index1=n_hat_0_1-2200+1;
+       index2=(epsilon_1-(-2))/0.1+1;
+       p(index1,int32(index2)) = sum(abs(z_m_1)).^2;
     end
 end
 
+%*********************step 10*************************
 
 
