@@ -100,8 +100,8 @@ for n_hat_0_1 = [2200:1:2400]
        % p(n_hat_0_1-2200+1,(epsilon_1-(-2))/0.1+1) = sum(abs(z_m_1)).^2;
        index1=n_hat_0_1-2200+1;
        index2=(epsilon_1-(-2))/0.1+1;
-       p(index1,int32(index2)) = sum(abs(z_m_1)).^2;
-    end
+       p(index1,int32(index2)) = sum(abs(z_m_1).^2);
+    end  
 end
 
 %*********************step 10*************************
