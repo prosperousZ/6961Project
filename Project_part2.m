@@ -11,7 +11,7 @@ Lambda = 24;%the oversampling factor
 Y = load('benchmark_rece_data_174623_1472.mat');
 Y = struct2array(Y);
 %remove noise
-Ypb = bandpass(Y,[-1000+Fc,8000 + Fc],samplingRate);
+Ypb = bandpass(Y,[-4000+Fc,4000 + Fc],samplingRate);
 
 %underwater paras
 c = 1500;
@@ -23,7 +23,7 @@ a = v/c;
 %plot(Ypb);
 Ttx = 8.2695;
 Trx = (2117580 - 700) * (1/samplingRate);% sample
-a_hat = Ttx/Trx -1;
+a_hat = 5e-5;
 YPB_re = resample(Ypb, round((1+a_hat) * 1e5),1e5);
 Ls = 192;
 Ms = 256;
@@ -75,9 +75,15 @@ YBB_est = YBB_est(2401:end);
 
 %declare n, i, and z_m_1
 n = [1:(k+L)*Lambda].';
-i = [1:k+L].';
+i = [1:k+L];
 z_m_1 = zeros(k,1);
+m = [1:k].';
 
+fft_matrix = exp(-1j * (2.*pi.*(m-1) .* (i-1))./k);
+%this step is to check the index of null_subcarrier
+ofdm_map= load('ofdm_map.mat');
+ofdm_map = struct2array(ofdm_map);
+i = [1:k+L].';
 %power over null subcarriers
 p = zeros((2400-2200)/1,(2-(-2))/0.1);
 for n_hat_0_1 = [2200:1:2400]
@@ -87,20 +93,17 @@ for n_hat_0_1 = [2200:1:2400]
         %Down-sampling
         %YBB_hat_1 = YBB_hat_1(i*Lambda);
         YBB_hat_1 = YBB_hat_1(1:Lambda:(k+L)*Lambda);
-        for m = 1:k
-            z_m_1(m) = sum(YBB_hat_1(i) .*exp(-1j * (2.*pi.*(m-1) .* (i-1))./k));
+        
+        %for m = 1:k
+        z_m_1 = fft_matrix*YBB_hat_1;
             %for q = 1:length(i)
              %   z_m_1(m) = z_m_1(m) + YBB_hat_1(q) * exp(-1j*((2*pi*(m-1)*(q-1))/k));
             %end
-        end
+        %end
         %for w = 1:k
          %   p(n_hat_0_1-2200+1,(epsilon_1-(-2))/0.1+1) =  sum()
         %end
-
-       % p(n_hat_0_1-2200+1,(epsilon_1-(-2))/0.1+1) = sum(abs(z_m_1)).^2;
-       index1=n_hat_0_1-2200+1;
-       index2=(epsilon_1-(-2))/0.1+1;
-       p(index1,int32(index2)) = sum(abs(z_m_1).^2);
+       p(n_hat_0_1-2200+1,int32((epsilon_1-(-2))/0.1+1)) = sum(abs(z_m_1(ofdm_map==0)).^2);
     end  
 end
 
