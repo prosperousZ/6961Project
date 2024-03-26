@@ -109,11 +109,11 @@ end
 [row,collum] = find(p==min(p(:)));
 
 %And for looking at the array, I found that minumum epsilon_1 index = 18
-%that means the minimum index is (186,18), epsilon_1 = -0.2
 %*********************step 10*************************
 
 %Let us initial n_hat_0_0
 n_hat_0_0 = (row+2200) - (k+L)*Lambda;
+e_w_array = zeros(21);
 for W_OFDM = [1:21]
   for n_hat_0_w = n_hat_0_0 + W_OFDM*((k+L)*Lambda + [-2*Lambda : 1 : 2*Lambda])
     for epsilon_w = [-2:0.1:2]
@@ -134,6 +134,8 @@ for W_OFDM = [1:21]
         %end
         p_null((2*Lambda + 2*Lambda)+1,int32((epsilon_w-(-2))/0.1+1)) = sum(abs(z_m_1(ofdm_map==0)).^2);
         [row,collum] = find(p_null==min(p_null(:)));
+        %Xiang will check the index of e_w
+        e_w_array(W) = collum;
        %p(n_hat_0_w-2200+1,int32((epsilon_1-(-2))/0.1+1)) = sum(abs(z_m_1(ofdm_map==0)).^2);
     end  
   end
