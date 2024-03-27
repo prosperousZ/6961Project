@@ -55,8 +55,8 @@ YPB_re_hat_vector = YPB_re_hat_vector(delay+1:end);
 fs = 192000;
 ts = 1/fs;
 n_passbandToBaseBand = [0:length(YPB_re_hat_vector)-1].';
-YBB_I = real(YPB_re_hat_vector .* 2.*cos(2.*pi.*Fc.*ts .*n_passbandToBaseBand ));
-YBB_Q = -imag(YPB_re_hat_vector .* 2.*sin(2.*pi.*Fc.*ts .*n_passbandToBaseBand ));
+YBB_I = YPB_re_hat_vector .* 2.*cos(2.*pi.*Fc.*ts .*n_passbandToBaseBand );
+YBB_Q = -YPB_re_hat_vector .* 2.*sin(2.*pi.*Fc.*ts .*n_passbandToBaseBand );
 
 YBB = YBB_I + 1j.*YBB_Q;
 %figure(4)
@@ -125,7 +125,8 @@ for W_OFDM = [1:21]
   end
   [row2,collum2] = find(p_null==min(p_null(:)));
     %Xiang will check the index of e_w
-  e_w_array(W_OFDM) = collum2(1);
+  e_w_array(W_OFDM) = collum2(1).*0.1 -1.9;
+
 end
 
 
