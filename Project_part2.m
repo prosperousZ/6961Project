@@ -93,17 +93,9 @@ for n_hat_0_1 = [2200:1:2400]
         %Down-sampling
         %YBB_hat_1 = YBB_hat_1(i*Lambda);
         YBB_hat_1 = YBB_hat_1(1:Lambda:(k+L)*Lambda);
-        
         %for m = 1:k
         z_m_1 = fft_matrix*YBB_hat_1;
-            %for q = 1:length(i)
-             %   z_m_1(m) = z_m_1(m) + YBB_hat_1(q) * exp(-1j*((2*pi*(m-1)*(q-1))/k));
-            %end
-        %end
-        %for w = 1:k
-         %   p(n_hat_0_1-2200+1,(epsilon_1-(-2))/0.1+1) =  sum()
-        %end
-       p(n_hat_0_1-2200+1,int32((epsilon_1-(-2))/0.1+1)) = sum(abs(z_m_1(ofdm_map==0)).^2);
+        p(n_hat_0_1-2200+1,int32((epsilon_1-(-2))/0.1+1)) = sum(abs(z_m_1(ofdm_map==0)).^2);
     end  
 end
 [row,collum] = find(p==min(p(:)));
@@ -113,32 +105,27 @@ end
 
 %Let us initial n_hat_0_0
 n_hat_0_0 = (row+2200) - (k+L)*Lambda;
-e_w_array = zeros(21);
+e_w_array = zeros(1,21);
+p_null = zeros((2*Lambda + 2*Lambda)/1,(2-(-2))/0.1);
+range = [-2*Lambda : 1 : 2*Lambda];
 for W_OFDM = [1:21]
-  for n_hat_0_w = n_hat_0_0 + W_OFDM*((k+L)*Lambda + [-2*Lambda : 1 : 2*Lambda])
+  for n_hat_0_w = n_hat_0_0 + W_OFDM*((k+L)*Lambda) + range
     for epsilon_w = [-2:0.1:2]
         %CFO compensation:
         YBB_hat_w = YBB_est(n_hat_0_w + n-1) .* exp((-1j .* 2.*pi.*epsilon_w).*(n-1+n_hat_0_w) .*ts);
         %Down-sampling
         %YBB_hat_1 = YBB_hat_1(i*Lambda);
         YBB_hat_w = YBB_hat_w(1:Lambda:(k+L)*Lambda);
-        
-        %for m = 1:k
+   
         z_m_w = fft_matrix*YBB_hat_w;
-            %for q = 1:length(i)
-             %   z_m_1(m) = z_m_1(m) + YBB_hat_1(q) * exp(-1j*((2*pi*(m-1)*(q-1))/k));
-            %end
-        %end
-        %for w = 1:k
-         %   p(n_hat_0_1-2200+1,(epsilon_1-(-2))/0.1+1) =  sum()
-        %end
-        p_null((2*Lambda + 2*Lambda)+1,int32((epsilon_w-(-2))/0.1+1)) = sum(abs(z_m_1(ofdm_map==0)).^2);
-        [row,collum] = find(p_null==min(p_null(:)));
-        %Xiang will check the index of e_w
-        e_w_array(W) = collum;
-       %p(n_hat_0_w-2200+1,int32((epsilon_1-(-2))/0.1+1)) = sum(abs(z_m_1(ofdm_map==0)).^2);
+
+        p_null(range+(2*Lambda)+1,int32((epsilon_w-(-2))/0.1+1)) = sum(abs(z_m_w(ofdm_map==0)).^2);
+     
     end  
   end
+  [row2,collum2] = find(p_null==min(p_null(:)));
+    %Xiang will check the index of e_w
+  e_w_array(W_OFDM) = collum2(1);
 end
 
 
