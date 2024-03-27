@@ -125,7 +125,7 @@ for W_OFDM = [1:21]
   end
   [row2,collum2] = find(p_null==min(p_null(:)));
     %Xiang will check the index of e_w
-  e_w_array(W_OFDM) = collum2(1).*0.1 -1.9;
+  e_w_array(W_OFDM) = collum2(1).*0.1 -2.1;
 
 end
 
