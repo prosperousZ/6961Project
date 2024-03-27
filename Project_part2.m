@@ -35,11 +35,13 @@ YPB_re_hat = upfirdn(YPB_re,h,Ls,Ms);
 pilot= load('pilot_signal_for_synchronization.mat');
 pilot = struct2array(pilot);
 correlation = xcorr(YPB_re_hat,pilot);
-%figure(2)
-%plot(abs(correlation));
+figure(2)
+plot(abs(correlation));
 
+abs_correlation = abs(correlation);
 %starting point of OFDM symbol
-n0 = 292726;
+[row3,collum3] = find(abs_correlation==max(abs_correlation(:)));
+n0 = row3 - length(YPB_re_hat);
 %n0_withGap = n0 + 2400;
 YPB_re_hat = YPB_re_hat(n0:end);
 
