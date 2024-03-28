@@ -23,11 +23,13 @@ v = 1.03;
 a = v/c;
 
 %maxX = max(Ypb, [], "all");
-
-%plot(Ypb);
+% figure(1)
+% plot(Ypb);
 Ttx = 8.2695;
-Trx = (2117580 - 700) * (1/samplingRate);% sample
-a_hat = 5e-5;
+Trx = (2115160 - 0) * (1/samplingRate);% sample
+
+%need to check the plot to see pre-assmble and symbol assmeble
+a_hat = 6.5e-4;
 YPB_re = resample(Ypb, round((1+a_hat) * 1e5),1e5);
 Ls = 192;
 Ms = 256;
@@ -113,6 +115,7 @@ e_w_array = zeros(1,21);
 p_null = zeros((2*Lambda + 2*Lambda)/1,(2-(-2))/0.1);
 range = [-2*Lambda : 1 : 2*Lambda];
 z_w_array = zeros(2048,21);
+n_hat_w_array = zeros(1,21);
 for W_OFDM = [1:21]
   for n_hat_0_w = n_hat_0_0 + W_OFDM*((k+L)*Lambda) + range
     for epsilon_w = [-2:0.1:2]
@@ -131,6 +134,7 @@ for W_OFDM = [1:21]
   [row2,collum2] = find(p_null==min(p_null(:)));
     %Xiang will check the index of e_w
   e_w_array(W_OFDM) = collum2(1).*0.1 -2.1;
+  n_hat_w_array(W_OFDM) = n_hat_0_w;
   for index = 1:2048
       z_w_array(index,W_OFDM) = z_m_w(index);
   end
