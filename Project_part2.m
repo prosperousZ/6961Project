@@ -35,8 +35,8 @@ YPB_re_hat = upfirdn(YPB_re,h,Ls,Ms);
 pilot= load('pilot_signal_for_synchronization.mat');
 pilot = struct2array(pilot);
 correlation = xcorr(YPB_re_hat,pilot);
-figure(2)
-plot(abs(correlation));
+% figure(2)
+% plot(abs(correlation));
 
 abs_correlation = abs(correlation);
 %starting point of OFDM symbol
@@ -110,6 +110,8 @@ n_hat_0_0 = (row+2200) - (k+L)*Lambda;
 e_w_array = zeros(1,21);
 p_null = zeros((2*Lambda + 2*Lambda)/1,(2-(-2))/0.1);
 range = [-2*Lambda : 1 : 2*Lambda];
+z_w_array = zeros(2048,21);
+n_hat_w_array = zeros(1,21);
 for W_OFDM = [1:21]
   for n_hat_0_w = n_hat_0_0 + W_OFDM*((k+L)*Lambda) + range
     for epsilon_w = [-2:0.1:2]
@@ -128,7 +130,10 @@ for W_OFDM = [1:21]
   [row2,collum2] = find(p_null==min(p_null(:)));
     %Xiang will check the index of e_w
   e_w_array(W_OFDM) = collum2(1).*0.1 -2.1;
-
+  n_hat_w_array(W_OFDM) = n_hat_0_w;
+  for index = 1:2048
+      z_w_array(index,W_OFDM) = z_m_w(index);
+  end
 end
 
 
