@@ -11,4 +11,5 @@ Currently, we have done the project 1 both task 1 and task 2.<br>
 
 We find the correct way to Trx, and calculate a_hat<br>
 
-
+The Project_part2 is to run benchmark<br>
+The project_part2_testbench is to run test_data<br>
