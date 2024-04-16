@@ -17,6 +17,7 @@ pilot_index = ofdm_map;
 pilot_symbol = OFDM_PILOT(1:end,1);
 
 z_p_w = zeros(k_p, num_ofdm);
+z_null= zeros(112, num_ofdm);
 d_p_w = zeros(k_p,1);
 index=0;
 
@@ -27,7 +28,8 @@ for v_index_coloum =1:L
          v(v_index_row, v_index_coloum) = exp(-1j * 2*pi*((v_index_row - 1) * (v_index_coloum-1))/k_p);
      end
 end
-vector = [1:k_p];
+h_ls = zeros(L,num_ofdm);
+%vector = [1:k_p];
 for ofdm_index =1:num_ofdm
     index = 0;
     for x=1:2048
@@ -38,15 +40,21 @@ for ofdm_index =1:num_ofdm
         %this 
             d_p_w(index) =pilot_symbol(x,1);
         end
+        if(pilot_index(x) == 0)
+            z_null(index, ofdm_index)=z_w(x, ofdm_index);
+        end
     end
     d_p_w = diag(d_p_w); 
-
-v_herm=v';
-d_p_w_her=d_p_w';
-z_p_w_her=z_p_w(1:end, ofdm_index);
- h_ls(vector,ofdm_index)=v_herm.*d_p_w_her.*z_p_w_her;
-   % h_ls(1:end,ofdm_index)=(1/k_p).*v'.*d_p_w'.*z_p_w(1:end, ofdm_index);
-
-    %H()=v.*h_ls;
+   
 end
+h_ls = (1/k_p)*v.' * d_p_w.' *z_p_w;
+H=v*h_ls;
+
+
+
+
+
+
+
+
 
