@@ -1,0 +1,52 @@
+%Task 3 Part 1
+%Load OFDM format file
+clear all
+close all
+
+load("OFDM_PILOT.mat"); 
+load("ofdm_map.mat");
+load("benchmark_Zw_172648_1.mat")
+load("benchmark_NoiseVar_172648_1.mat")
+
+%figure(), plot(ofdm_map)
+%figure(), plot(OFDM_PILOT)
+k_p = 512;
+num_ofdm = 21;
+z_w = bb_rece_data_172648_1474(1:end,1:end);
+pilot_index = ofdm_map;
+pilot_symbol = OFDM_PILOT(1:end,1);
+
+z_p_w = zeros(k_p, num_ofdm);
+d_p_w = zeros(k_p,1);
+index=0;
+
+L = 200;
+v = ones(k_p,L);
+for v_index_coloum =1:L
+     for v_index_row = 1:k_p
+         v(v_index_row, v_index_coloum) = exp(-1j * 2*pi*((v_index_row - 1) * (v_index_coloum-1))/k_p);
+     end
+end
+vector = [1:k_p];
+for ofdm_index =1:num_ofdm
+    index = 0;
+    for x=1:2048
+        if(pilot_index(x) == 1)
+            index=index+1;
+            z_p_w(index,ofdm_index)=z_w(x,ofdm_index);
+
+        %this 
+            d_p_w(index) =pilot_symbol(x,1);
+        end
+    end
+    d_p_w = diag(d_p_w); 
+
+v_herm=v';
+d_p_w_her=d_p_w';
+z_p_w_her=z_p_w(1:end, ofdm_index);
+ h_ls(vector,ofdm_index)=v_herm.*d_p_w_her.*z_p_w_her;
+   % h_ls(1:end,ofdm_index)=(1/k_p).*v'.*d_p_w'.*z_p_w(1:end, ofdm_index);
+
+    %H()=v.*h_ls;
+end
+
