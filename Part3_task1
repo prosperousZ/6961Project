@@ -1,4 +1,4 @@
-%Part 3 Task 1
+%Task 3 Part 1
 %Load OFDM format file
 clear all
 close all
@@ -11,31 +11,95 @@ load("benchmark_NoiseVar_172648_1.mat")
 %figure(), plot(ofdm_map)
 %figure(), plot(OFDM_PILOT)
 k_p = 512;
-z_w = bb_rece_data_172648_1474(1:end, 1);
+%number of null subcaiier
+S_N = 112;
+num_ofdm = 21;
+k=2048; %total number of ofdm subcarriers
+z_w = bb_rece_data_172648_1474(1:end,1:end);
 pilot_index = ofdm_map;
 pilot_symbol = OFDM_PILOT(1:end,1);
-%z_p_w = zeros(2048, 1);
-z_p_w = zeros(k_p, 1);
+
+z_p_w = zeros(k_p, num_ofdm);
+z_null= zeros(112, num_ofdm);
 d_p_w = zeros(k_p,1);
 index=0;
-for x=1:2048
-    if(pilot_index(x) == 1)
-        index=index+1;
-        z_p_w(index)=z_w(x,1);
 
-        %this 
-        d_p_w(index) =pilot_symbol(x,1);
-    end
-end
-d_p_w = diag(d_p_w);
 L = 200;
 v = ones(k_p,L);
 for v_index_coloum =1:L
-    for v_index_row = 1:k_p
-        v(v_index_row, v_index_coloum) = exp(-1j * 2*pi*((v_index_row - 1) * (v_index_coloum-1))/k_p);
+     for v_index_row = 1:k_p
+         v(v_index_row, v_index_coloum) = exp(-1j * 2*pi*((v_index_row - 1) * (v_index_coloum-1))/k_p);
+     end
+end
+
+%v2 for all subcarriers
+v2 = ones(k,L);
+for v_index_coloum =1:L
+     for v_index_row = 1:k
+         v2(v_index_row, v_index_coloum) = exp(-1j * 2*pi*((v_index_row - 1) * (v_index_coloum-1))/k);
+     end
+end
+
+h_ls = zeros(L,num_ofdm);
+%vector = [1:k_p];
+z_data=zeros(1420, 21);
+H_w = zeros(2048,21);
+for ofdm_index =1:num_ofdm
+    index = 0;
+    index_null=0;
+    for x=1:2048
+        if(pilot_index(x) == 1)
+            index=index+1;
+            z_p_w(index,ofdm_index)=z_w(x,ofdm_index);
+
+        %this 
+            d_p_w(index) =pilot_symbol(x,1);
+        end
+        if(pilot_index(x) == 0)
+            index_null=index_null+1;
+            z_null(index_null, ofdm_index)=z_w(x, ofdm_index);
+        end
+
+    end
+    d_p_w = diag(d_p_w); 
+   
+end
+h_ls = (1/k_p)*v' * d_p_w' *z_p_w;
+%figure(1),plot(abs(h_ls(:, 1)))
+H=v2*h_ls;
+%figure(), plot(abs(H(:, 1)))
+
+%Calculate Variance
+two_sigma_square = (1/S_N)*sum(abs(z_null).^2);
+
+%******************one-tap equalizer
+H_data = zeros(1420,21);
+index_array = zeros(1420);
+
+%Extract data subcarrier frequency response
+for num = 1:num_ofdm
+    index_data = 0;
+    for x=1:k
+        if(pilot_index(x) == 2)
+            index_data=index_data+1;
+            z_data(index_data, num)=z_w(x, num);
+            H_data(index_data, num)=H(x, num);
+        end
     end
 end
 
-h_ls=(1/k_p)*v.'*d_p_w.'*z_p_w;
+%Log-Likelihood Ratio
+A=(abs(z_data-H_data*x1)^2)/two_sigma_square;
+B=(abs(z_data-H_data*x2)^2)/two_sigma_square;
+C=(abs(z_data-H_data*x3)^2)/two_sigma_square;
+D=(abs(z_data-H_data*x4)^2)/two_sigma_square;
 
-H=v*h_ls;
+MLLR= (max(A,C) + log10(1+exp(-abs(C-A)))) - (max(B,D) + log10(1+exp(-abs(D-B))))
+
+
+
+
+
+
+
+
