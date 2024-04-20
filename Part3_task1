@@ -10,10 +10,9 @@ load("benchmark_NoiseVar_172648_1.mat")
 
 %figure(), plot(ofdm_map)
 %figure(), plot(OFDM_PILOT)
-k_p = 512;
-%number of null subcaiier
-S_N = 112;
-num_ofdm = 21;
+k_p = 512; %number of pilot subcarriers
+S_N = 112; %number of null subcarriers
+num_ofdm = 21;%number of ofdm symbols
 k=2048; %total number of ofdm subcarriers
 z_w = bb_rece_data_172648_1474(1:end,1:end);
 pilot_index = ofdm_map;
@@ -41,7 +40,6 @@ for v_index_coloum =1:L
 end
 
 h_ls = zeros(L,num_ofdm);
-%vector = [1:k_p];
 z_data=zeros(1420, 21);
 H_w = zeros(2048,21);
 for ofdm_index =1:num_ofdm
@@ -51,19 +49,17 @@ for ofdm_index =1:num_ofdm
         if(pilot_index(x) == 1)
             index=index+1;
             z_p_w(index,ofdm_index)=z_w(x,ofdm_index);
-
-        %this 
             d_p_w(index) =pilot_symbol(x,1);
         end
+
         if(pilot_index(x) == 0)
             index_null=index_null+1;
             z_null(index_null, ofdm_index)=z_w(x, ofdm_index);
         end
-
     end
-    d_p_w = diag(d_p_w); 
-   
+    d_p_w = diag(d_p_w);   
 end
+
 h_ls = (1/k_p)*v' * d_p_w' *z_p_w;
 %figure(1),plot(abs(h_ls(:, 1)))
 H=v2*h_ls;
@@ -74,9 +70,8 @@ two_sigma_square = (1/S_N)*sum(abs(z_null).^2);
 
 %******************one-tap equalizer
 H_data = zeros(1420,21);
-index_array = zeros(1420);
 
-%Extract data subcarrier frequency response
+%Extract data subcarrier frequency response from Hw
 for num = 1:num_ofdm
     index_data = 0;
     for x=1:k
@@ -86,19 +81,43 @@ for num = 1:num_ofdm
             H_data(index_data, num)=H(x, num);
         end
     end
-end
+end 
 
-%Log-Likelihood Ratio
-A=(abs(z_data-H_data*x1)^2)/two_sigma_square;
-B=(abs(z_data-H_data*x2)^2)/two_sigma_square;
-C=(abs(z_data-H_data*x3)^2)/two_sigma_square;
-D=(abs(z_data-H_data*x4)^2)/two_sigma_square;
+%%%%%%%%%%%%%%%%%%%%%%%%
+% Log-Likelihood Ratio %
+%%%%%%%%%%%%%%%%%%%%%%%%
+b1_zd = real(z_data); %Split Z_data into real and imag components
+b2_zd = imag(z_data);
 
-MLLR= (max(A,C) + log10(1+exp(-abs(C-A)))) - (max(B,D) + log10(1+exp(-abs(D-B))))
+x1=(1+1j)/sqrt(2);
+x2=(-1+1j)/sqrt(2);
+x3=(1-1j)/sqrt(2);
+x4=(-1-1j)/sqrt(2);
 
+% checkers=ones(1420, 21);
+% array = [2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22];
+% lion = checkers./array;
 
+A1=(abs(b1_zd-H_data*real(x1)).^2)./two_sigma_square; 
+B1=(abs(b1_zd-H_data*real(x2)).^2)./two_sigma_square;
+C1=(abs(b1_zd-H_data*real(x3)).^2)./two_sigma_square;
+D1=(abs(b1_zd-H_data*real(x4)).^2)./two_sigma_square;
 
+A2=(abs(b2_zd-H_data*imag(x1)).^2)./two_sigma_square; 
+B2=(abs(b2_zd-H_data*imag(x2)).^2)./two_sigma_square;
+C2=(abs(b2_zd-H_data*imag(x3)).^2)./two_sigma_square;
+D2=(abs(b2_zd-H_data*imag(x4)).^2)./two_sigma_square;
 
+MLLR_b1= ((max(A1,C1) + log10(1+exp(-abs(C1-A1)))) - (max(B1,D1) + log10(1+exp(-abs(D1-B1)))));
+MLLR_b2= ((max(A2,B2) + log10(1+exp(-abs(B2-A2)))) - (max(C2,D2) + log10(1+exp(-abs(C2-B2)))));
+MLLR_combined=reshape([MLLR_b1.';MLLR_b2.'], 21, []).';
+
+% mat1=[1 1 1 1; 2 2 2 2; 3 3 3 3].';
+% mat2=[0 0 0 0; 10 10 10 10; 0 0 0 0].';
+% mat3=reshape([mat1;mat2], size(mat1,1), []).';
+% mat3
+
+% Decoder %
 
 
 
