@@ -3,10 +3,14 @@
 clear all
 close all
 
+%add path
+addpath ./mex;
 load("OFDM_PILOT.mat"); 
 load("ofdm_map.mat");
 load("benchmark_Zw_172648_1.mat")
 load("benchmark_NoiseVar_172648_1.mat")
+% NAME='./5G_LDPC_M10_N20_Z142_Q2_nonVer.txt';
+% [address, LDPC_INFOLEN]=ldpc_mex_initial_CAPI([1420,2840,2], NAME);
 
 %figure(), plot(ofdm_map)
 %figure(), plot(OFDM_PILOT)
@@ -110,7 +114,7 @@ D2=(abs(b2_zd-H_data*imag(x4)).^2)./two_sigma_square;
 
 MLLR_b1= ((max(A1,C1) + log10(1+exp(-abs(C1-A1)))) - (max(B1,D1) + log10(1+exp(-abs(D1-B1)))));
 MLLR_b2= ((max(A2,B2) + log10(1+exp(-abs(B2-A2)))) - (max(C2,D2) + log10(1+exp(-abs(C2-B2)))));
-MLLR_combined=reshape([MLLR_b1.';MLLR_b2.'], 21, []).';
+LR=reshape([MLLR_b1.';MLLR_b2.'], 21, []).';
 
 % mat1=[1 1 1 1; 2 2 2 2; 3 3 3 3].';
 % mat2=[0 0 0 0; 10 10 10 10; 0 0 0 0].';
@@ -118,7 +122,22 @@ MLLR_combined=reshape([MLLR_b1.';MLLR_b2.'], 21, []).';
 % mat3
 
 % Decoder %
+NAME='./5G_LDPC_M10_N20_Z142_Q2_nonVer.txt';
+[address, LDPC_INFOLEN]=ldpc_mex_initial_CAPI([1420,2840,2], NAME);
+load("INTRLVR.mat");
+load("CODE.mat");
 
-
-
-
+bit_err_total=0;
+BLER_total=0;
+for i=2:num_ofdm
+    LR_in_de = zeros(length(LR), i);
+    LR_in_de(INTRLVR)=LR(:,i);
+    APP_code=ldpcDecoder_CAPI(address, LR_in_de);
+    est_code=(APP_code<0);
+    bec=sum(abs(est_code-CODE(:,i)));
+    bit_err_total = bit_err_total+bec; 
+    if bec ~= 0
+    BLER_total=BLER_total+1;
+    end
+end 
+BER=bit_err_total/(2840*20);
